@@ -134,6 +134,7 @@ public class VClientImpl extends IVClient.Stub {
 				super.start();
 			}
 		});
+		IOHook.redirect("/data/data/" + data.appInfo.packageName + "/", data.appInfo.dataDir);
 		IOHook.startDexOverride();
 		IOHook.hookNative();
 		ContextFixer.fixCamera();
