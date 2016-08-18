@@ -64,10 +64,12 @@ public class VApp extends Application {
 		for (String pkg : GMS_PKG) {
 			try {
 				ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
-				String apkPath = appInfo.sourceDir;
-				VirtualCore.getCore().installApp(apkPath,
-						InstallStrategy.DEPEND_SYSTEM_IF_EXIST | InstallStrategy.TERMINATE_IF_EXIST);
-			} catch (Throwable e) {
+				if(appInfo.enabled) {
+					String apkPath = appInfo.sourceDir;
+					VirtualCore.getCore().installApp(apkPath,
+							InstallStrategy.DEPEND_SYSTEM_IF_EXIST | InstallStrategy.TERMINATE_IF_EXIST);
+				}
+				} catch (Throwable e) {
 				// Ignore
 			}
 		}
