@@ -16,6 +16,7 @@ import android.os.RemoteException;
 
 import com.lody.virtual.client.core.VirtualCore;
 import com.lody.virtual.client.env.VirtualRuntime;
+import com.lody.virtual.client.listeners.ActivityManagerListener;
 import com.lody.virtual.client.service.ServiceManagerNative;
 import com.lody.virtual.helper.ExtraConstants;
 import com.lody.virtual.helper.proto.AppTaskInfo;
@@ -39,8 +40,14 @@ public class VActivityManager {
 
 	private Map<IBinder, LocalActivityRecord> mActivities = new HashMap<IBinder, LocalActivityRecord>(6);
 
+	private ActivityManagerListener mActivityManagerListener;
+
 	public static VActivityManager get() {
 		return sAM;
+	}
+	
+	private VActivityManager(){
+		mActivityManagerListener = VirtualCore.getCore().getActivityManagerListener();
 	}
 
 	public IActivityManager getService() {
@@ -60,6 +67,9 @@ public class VActivityManager {
 	}
 
 	public LocalActivityRecord onActivityCreate(Activity activity) {
+		if(mActivityManagerListener!=null){
+			mActivityManagerListener.onActivityCreate(activity);
+		}
 		Intent intent = activity.getIntent();
 		if (intent == null) {
 			return null;
@@ -98,6 +108,9 @@ public class VActivityManager {
 	}
 
 	public void onActivityResumed(Activity activity) {
+		if(mActivityManagerListener!=null){
+			mActivityManagerListener.onActivityResumed(activity);
+		}
 		IBinder token = activity.getActivityToken();
 		try {
 			getService().onActivityResumed(token);
@@ -107,6 +120,9 @@ public class VActivityManager {
 	}
 
 	public void onActivityDestroy(Activity activity) {
+		if(mActivityManagerListener!=null){
+			mActivityManagerListener.onActivityDestroy(activity);
+		}
 		IBinder token = activity.getActivityToken();
 		mActivities.remove(token);
 		try {

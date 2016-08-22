@@ -24,6 +24,7 @@ import android.util.LruCache;
 import com.lody.virtual.client.env.Constants;
 import com.lody.virtual.client.env.VirtualRuntime;
 import com.lody.virtual.client.fixer.ContextFixer;
+import com.lody.virtual.client.listeners.ActivityManagerListener;
 import com.lody.virtual.client.local.VActivityManager;
 import com.lody.virtual.client.local.VPackageManager;
 import com.lody.virtual.client.service.ServiceManagerNative;
@@ -75,6 +76,8 @@ public final class VirtualCore {
 	private final int myUid = Process.myUid();
 	private int systemPid;
 
+	private ActivityManagerListener mActivityManagerListener;
+
 
 	private VirtualCore() {
 
@@ -88,6 +91,13 @@ public final class VirtualCore {
 		return VUserHandle.getUserId(myUid);
 	}
 
+	public ActivityManagerListener getActivityManagerListener() {
+		return mActivityManagerListener;
+	}
+
+	public void setActivityManagerListener(ActivityManagerListener mActivityManagerListener) {
+		this.mActivityManagerListener = mActivityManagerListener;
+	}
 
 	public static VirtualCore getCore() {
 		return gCore;
