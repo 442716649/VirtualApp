@@ -46,7 +46,8 @@ public class AppRepository implements AppDataSource {
 	}
 
 	private static boolean isSystemApplication(PackageInfo packageInfo) {
-		return (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+		//mod 247321453 部分内置应用，如果更新，则显示，一般的系统组件都不会更新版本
+		return ((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0 && (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0);
 	}
 
 	@Override

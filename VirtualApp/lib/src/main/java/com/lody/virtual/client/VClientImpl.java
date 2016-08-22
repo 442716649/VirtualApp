@@ -170,6 +170,8 @@ public class VClientImpl extends IVClient.Stub {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
+		IOHook.hook();
+		IOHook.redirect("/data/data/" + data.appInfo.packageName + "/", data.appInfo.dataDir+"/");
 		IOHook.hookNative();
 		ActivityThread mainThread = VirtualCore.mainThread();
 		Reflect.on(mainThread).set("mInitialApplication", null);
