@@ -45,7 +45,7 @@ public class VActivityManager {
 	public static VActivityManager get() {
 		return sAM;
 	}
-	
+
 	private VActivityManager(){
 		mActivityManagerListener = VirtualCore.getCore().getActivityManagerListener();
 	}
