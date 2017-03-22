@@ -16,6 +16,7 @@ import android.os.Build;
 import android.widget.RemoteViews;
 
 import com.lody.virtual.client.core.VirtualCore;
+import com.lody.virtual.helper.utils.OSUtils;
 import com.lody.virtual.helper.utils.Reflect;
 import com.lody.virtual.helper.utils.VLog;
 
@@ -201,24 +202,32 @@ import mirror.com.android.internal.R_Hide;
 
     void fixIconImage(Resources resources, RemoteViews remoteViews, boolean hasIconBitmap, Notification notification) {
         if (remoteViews == null) return;
-        if (!mNotificationCompat.isSystemLayout(remoteViews)) {
+        //force
+        final boolean fixAll = false;
+        //rom
+        if(OSUtils.getInstance().isEmui() || fixAll){
+            hasIconBitmap = false;
+        }
+        if (!mNotificationCompat.isSystemLayout(remoteViews) || hasIconBitmap) {
+            VLog.w(TAG, "ignore not system contentView or already deal ?"+hasIconBitmap);
             return;
         }
         try {
             //noinspection deprecation
             int id = R_Hide.id.icon.get();
             //only fake small icon
-            if (!hasIconBitmap && notification.largeIcon == null) {
+            if (notification.largeIcon == null) {
                 Drawable drawable = resources.getDrawable(notification.icon);
                 drawable.setLevel(notification.iconLevel);
                 Bitmap bitmap = drawableToBitMap(drawable);
                 remoteViews.setImageViewBitmap(id, bitmap);
-            }
-            if (Build.VERSION.SDK_INT >= 21) {
-                remoteViews.setInt(id, "setBackgroundColor", Color.TRANSPARENT);
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                remoteViews.setViewPadding(id, 0, 0, 0, 0);
+//                if (Build.VERSION.SDK_INT >= 21) {
+//                    remoteViews.setInt(id, "setBackgroundColor", Color.TRANSPARENT);
+//                }
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//                    remoteViews.setViewPadding(id, 0, 0, 0, 0);
+//                }
+                notification.largeIcon = bitmap;
             }
         } catch (Exception e) {
             e.printStackTrace();

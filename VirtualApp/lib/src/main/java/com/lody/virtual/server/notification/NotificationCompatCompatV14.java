@@ -39,7 +39,8 @@ class NotificationCompatCompatV14 extends NotificationCompat {
         }
         if (notification.tickerView != null) {
             if (isSystemLayout(notification.tickerView)) {
-                getNotificationFixer().fixRemoteViewActions(appContext, false, notification.tickerView);
+                boolean hasIconBitmap = getNotificationFixer().fixRemoteViewActions(appContext, false, notification.tickerView);
+                getNotificationFixer().fixIconImage(appContext.getResources(), notification.tickerView, hasIconBitmap, notification);
             } else {
                 notification.tickerView = getRemoteViewsFixer().makeRemoteViews(id + ":tickerView", appContext,
                         notification.tickerView, false, false);
@@ -57,7 +58,8 @@ class NotificationCompatCompatV14 extends NotificationCompat {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             if (notification.bigContentView != null) {
                 if (isSystemLayout(notification.bigContentView)) {
-                    getNotificationFixer().fixRemoteViewActions(appContext, false, notification.bigContentView);
+                    boolean hasIconBitmap = getNotificationFixer().fixRemoteViewActions(appContext, false, notification.bigContentView);
+                    getNotificationFixer().fixIconImage(appContext.getResources(), notification.bigContentView, hasIconBitmap, notification);
                 } else {
                     notification.bigContentView = getRemoteViewsFixer().makeRemoteViews(id + ":bigContentView", appContext,
                             notification.bigContentView, true, true);
@@ -68,7 +70,7 @@ class NotificationCompatCompatV14 extends NotificationCompat {
             if (notification.headsUpContentView != null) {
                 if (isSystemLayout(notification.headsUpContentView)) {
                     boolean hasIconBitmap = getNotificationFixer().fixRemoteViewActions(appContext, false, notification.headsUpContentView);
-                    getNotificationFixer().fixIconImage(appContext.getResources(), notification.contentView, hasIconBitmap, notification);
+                    getNotificationFixer().fixIconImage(appContext.getResources(), notification.headsUpContentView, hasIconBitmap, notification);
                 } else {
                     notification.headsUpContentView = getRemoteViewsFixer().makeRemoteViews(id + ":headsUpContentView", appContext,
                             notification.headsUpContentView, false, false);
