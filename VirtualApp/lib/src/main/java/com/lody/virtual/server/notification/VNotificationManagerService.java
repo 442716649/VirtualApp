@@ -2,6 +2,7 @@ package com.lody.virtual.server.notification;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
 
 import com.lody.virtual.helper.utils.VLog;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VNotificationManagerService extends INotificationManager.Stub {
     private static final AtomicReference<VNotificationManagerService> gService = new AtomicReference<>();
@@ -24,6 +27,35 @@ public class VNotificationManagerService extends INotificationManager.Stub {
     private VNotificationManagerService(Context context) {
         mContext = context;
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            //resume notification info
+            StatusBarNotification[] statusBarNotifications = mNotificationManager.getActiveNotifications();
+            if (statusBarNotifications != null) {
+                for (StatusBarNotification sbn : statusBarNotifications) {
+                    int id = sbn.getId();
+                    String tag = sbn.getTag();
+                    if (tag != null) {
+                        Pattern pattern = Pattern.compile("^([a-zA-Z\\.]+):([^@]+?)@(\\d+)$");
+                        Matcher m = pattern.matcher(tag);
+                        if (m.find() && m.groupCount() == 3) {
+                            String packageName = m.group(1);
+//                             String tag = m.group(2);
+                            int userId = Integer.parseInt(m.group(3));
+                            synchronized (mNotifications) {
+                                List<NotificationInfo> list = mNotifications.get(packageName);
+                                if (list == null) {
+                                    list = new ArrayList<>();
+                                    mNotifications.put(packageName, list);
+                                }
+                                list.add(new NotificationInfo(id, tag, packageName, userId));
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
     public static void systemReady(Context context) {
