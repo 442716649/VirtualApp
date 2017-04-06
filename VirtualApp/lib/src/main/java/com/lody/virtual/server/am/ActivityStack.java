@@ -9,7 +9,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 import android.util.SparseArray;
 
 import com.lody.virtual.client.core.VirtualCore;
@@ -206,8 +205,6 @@ import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TOP;
 
     int startActivityLocked(int userId, Intent intent, ActivityInfo info, IBinder resultTo, Bundle options,
                             String resultWho, int requestCode) {
-        boolean isClearTop_SingleTop = false;
-
         optimizeTasksLocked();
 
         Intent destIntent;
@@ -250,11 +247,7 @@ import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TOP;
 
         switch (info.launchMode) {
             case LAUNCH_SINGLE_TOP: {
-                if (!clearTop) {
-                    singleTop = true;
-                } else {
-                    isClearTop_SingleTop = true;
-                }
+                singleTop = true;
                 if (containFlags(intent, Intent.FLAG_ACTIVITY_NEW_TASK)) {
                     reuseTarget = containFlags(intent, Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                             ? ReuseTarget.MULTIPLE
@@ -319,7 +312,7 @@ import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TOP;
             if (clearTarget.deliverIntent || singleTop) {
                 taskMarked = markTaskByClearTarget(reuseTask, clearTarget, intent.getComponent());
                 ActivityRecord topRecord = topActivityInTask(reuseTask);
-                if (clearTop && topRecord != null && taskMarked) {
+                if (clearTop && !singleTop && topRecord != null && taskMarked) {
                     topRecord.marked = true;
                 }
                 // Target activity is on top
@@ -327,21 +320,11 @@ import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TOP;
                     deliverNewIntentLocked(sourceRecord, topRecord, intent);
                     delivered = true;
                 }
-                if (isClearTop_SingleTop && hasActivity(topRecord, intent.getComponent())) {
-                    topRecord.marked = false;
-                    deliverNewIntentLocked(sourceRecord, topRecord, intent);
-                    delivered = true;
-                    Log.e("AStack", "fix clear top with single top");
-                }
             }
             if (taskMarked) {
                 synchronized (mHistory) {
                     scheduleFinishMarkedActivityLocked();
                 }
-            }
-            if (reuseTask != null && reuseTask.isFinishing()) {
-                startActivityInNewTaskLocked(userId, intent, info, options);
-                delivered = true;
             }
             if (!startTaskToFront) {
                 if (!delivered) {
