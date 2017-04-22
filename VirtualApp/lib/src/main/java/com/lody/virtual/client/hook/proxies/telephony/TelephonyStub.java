@@ -6,6 +6,11 @@ import com.lody.virtual.client.hook.base.Inject;
 import com.lody.virtual.client.hook.base.BinderInvocationProxy;
 import com.lody.virtual.client.hook.base.ReplaceCallingPkgMethodProxy;
 import com.lody.virtual.client.hook.base.ReplaceLastPkgMethodProxy;
+import com.lody.virtual.client.hook.base.StaticMethodProxy;
+import com.lody.virtual.client.hook.utils.MethodParameterUtils;
+import com.lody.virtual.client.ipc.VLocationManager;
+
+import java.lang.reflect.Method;
 
 import mirror.com.android.internal.telephony.ITelephony;
 
@@ -19,12 +24,36 @@ public class TelephonyStub extends BinderInvocationProxy {
 		super(ITelephony.Stub.asInterface, Context.TELEPHONY_SERVICE);
 	}
 
+	private static class VReplaceCallingPkgMethodProxy extends StaticMethodProxy {
+		public VReplaceCallingPkgMethodProxy(String name) {
+			super(name);
+		}
+		private String callPkg;
+		@Override
+		public boolean beforeCall(Object who, Method method, Object... args) {
+			callPkg = MethodParameterUtils.replaceFirstAppPkg(args);
+			return super.beforeCall(who, method, args);
+		}
+
+		@Override
+		public Object call(Object who, Method method, Object... args) throws Throwable {
+			if("getCellLocation".equals(getMethodName())
+					|| "getAllCellInfo".equals(getMethodName())
+					|| "getNeighboringCellInfo".equals(getMethodName())){
+				if(!VLocationManager.get().hasVirtualLocation(callPkg, getAppUserId())){
+					return null;
+				}
+			}
+			return super.call(who, method, args);
+		}
+	}
+
 	@Override
 	protected void onBindMethods() {
 		super.onBindMethods();
-		addMethodProxy(new ReplaceCallingPkgMethodProxy("getNeighboringCellInfo"));
-		addMethodProxy(new ReplaceCallingPkgMethodProxy("getAllCellInfo"));
-		addMethodProxy(new ReplaceCallingPkgMethodProxy("getCellLocation"));
+		addMethodProxy(new VReplaceCallingPkgMethodProxy("getNeighboringCellInfo"));
+		addMethodProxy(new VReplaceCallingPkgMethodProxy("getAllCellInfo"));
+		addMethodProxy(new VReplaceCallingPkgMethodProxy("getCellLocation"));
 		addMethodProxy(new ReplaceCallingPkgMethodProxy("isOffhook"));
 		addMethodProxy(new ReplaceLastPkgMethodProxy("getLine1NumberForDisplay"));
 		addMethodProxy(new ReplaceLastPkgMethodProxy("isOffhookForSubscriber"));

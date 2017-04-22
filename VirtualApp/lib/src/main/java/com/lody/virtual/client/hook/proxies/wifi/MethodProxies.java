@@ -2,6 +2,7 @@ package com.lody.virtual.client.hook.proxies.wifi;
 
 import com.lody.virtual.client.hook.base.MethodProxy;
 import com.lody.virtual.client.hook.utils.MethodParameterUtils;
+import com.lody.virtual.client.ipc.VLocationManager;
 
 import java.lang.reflect.Method;
 
@@ -34,8 +35,12 @@ class MethodProxies {
 
         @Override
         public Object call(Object who, Method method, Object... args) throws Throwable {
-            MethodParameterUtils.replaceFirstAppPkg(args);
-            return method.invoke(who, args);
+            String pkg = MethodParameterUtils.replaceFirstAppPkg(args);
+            if(VLocationManager.get().hasVirtualLocation(pkg, getAppUserId())) {
+                return method.invoke(who, args);
+            }else{
+                return null;
+            }
         }
     }
 
