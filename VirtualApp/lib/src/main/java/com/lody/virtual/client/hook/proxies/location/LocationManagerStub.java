@@ -89,7 +89,8 @@ public class LocationManagerStub extends BinderInvocationProxy {
 		}
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-			addMethodProxy(new VReplaceLastPkgMethodProxy("addGpsStatusListener"));
+			addMethodProxy(new ReplaceLastPkgMethodProxy("addGpsStatusListener"));
+			addMethodProxy(new VReplaceLastPkgMethodProxy("registerGnssStatusCallback"));
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
 			addMethodProxy(new VReplaceLastPkgMethodProxy("requestLocationUpdates"));
