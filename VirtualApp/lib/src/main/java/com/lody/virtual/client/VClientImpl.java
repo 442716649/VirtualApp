@@ -114,11 +114,12 @@ public final class VClientImpl extends IVClient.Stub {
     }
 
     public String getCurrentPackage() {
-        return mBoundApplication != null ? mBoundApplication.appInfo.packageName : null;
+        return mBoundApplication != null ?
+                mBoundApplication.appInfo.packageName : VPackageManager.get().getNameForUid(getVUid());
     }
 
     public ApplicationInfo getCurrentApplicationInfo() {
-        return mInitialApplication != null ? mInitialApplication.getApplicationInfo() : null;
+        return mBoundApplication != null ? mBoundApplication.appInfo : null;
     }
 
     public CrashHandler getCrashHandler() {
@@ -379,7 +380,7 @@ public final class VClientImpl extends IVClient.Stub {
             NativeEngine.redirectDirectory("/data/user_de/0/" + info.packageName, info.dataDir);
         }
         String libPath = new File(VEnvironment.getDataAppPackageDirectory(info.packageName), "lib").getAbsolutePath();
-        String userLibPath = new File(VEnvironment.getUserSystemDirectory(userId), "lib").getAbsolutePath();
+        String userLibPath = new File(VEnvironment.getUserSystemDirectory(userId), info.packageName + "/lib").getAbsolutePath();
         NativeEngine.redirectDirectory(userLibPath, libPath);
         NativeEngine.redirectDirectory("/data/data/" + info.packageName + "/lib/", libPath);
         NativeEngine.redirectDirectory("/data/user/0/" + info.packageName + "/lib/", libPath);
@@ -418,6 +419,7 @@ public final class VClientImpl extends IVClient.Stub {
             Context hostContext = VirtualCore.get().getContext();
             return hostContext.createPackageContext(packageName, Context.CONTEXT_INCLUDE_CODE | Context.CONTEXT_IGNORE_SECURITY);
         } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
             VirtualRuntime.crash(new RemoteException());
         }
         throw new RuntimeException();
