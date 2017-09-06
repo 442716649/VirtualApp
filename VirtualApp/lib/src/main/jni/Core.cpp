@@ -56,7 +56,7 @@ static JNINativeMethod gMethods[] = {
                       "(Ljava/lang/String;)Ljava/lang/String;"),
 
         NATIVE_METHOD((void *) Java_nativeHookNative, "nativeHookNative",
-                      "(Ljava/lang/Object;Ljava/lang/String;ZII)V"),
+                      "(Ljava/lang/Object;Ljava/lang/String;ZI[I)V"),
 };
 
 
