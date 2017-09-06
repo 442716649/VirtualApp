@@ -10,8 +10,8 @@ jclass gClass;
 
 void Java_nativeHookNative(JNIEnv *env, jclass jclazz, jobjectArray javaMethods,
                            jstring packageName,
-                           jboolean isArt, jint apiLevel, jint cameraMethodType) {
-    patchAndroidVM(javaMethods, packageName, isArt, apiLevel, cameraMethodType);
+                           jboolean isArt, jint apiLevel, jintArray methodTypes) {
+    patchAndroidVM(javaMethods, packageName, isArt, apiLevel, methodTypes);
 }
 
 

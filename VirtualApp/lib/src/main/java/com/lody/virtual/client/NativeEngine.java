@@ -128,9 +128,20 @@ public class NativeEngine {
         if (sFlag) {
             return;
         }
-        Method[] methods = {NativeMethods.gOpenDexFileNative, NativeMethods.gCameraNativeSetup, NativeMethods.gAudioRecordNativeCheckPermission};
+        Method[] methods = {
+                NativeMethods.gOpenDexFileNative,
+                NativeMethods.gCameraNativeSetup,
+                NativeMethods.gAudioRecordNativeCheckPermission,
+                NativeMethods.gAudioRecordNativeSetup,
+                NativeMethods.gMediaRecorderNativeSetup
+        };
         try {
-            nativeHookNative(methods, VirtualCore.get().getHostPkg(), VirtualRuntime.isArt(), Build.VERSION.SDK_INT, NativeMethods.gCameraMethodType);
+            nativeHookNative(methods, VirtualCore.get().getHostPkg(), VirtualRuntime.isArt(), Build.VERSION.SDK_INT,
+                    new int[]{
+                            NativeMethods.gCameraMethodType,
+                            NativeMethods.gAudioRecordNativeSetupType,
+                            NativeMethods.gMediaRecorderNativeSetupType,}
+            );
         } catch (Throwable e) {
             VLog.e(TAG, VLog.getStackTraceString(e));
         }
@@ -177,7 +188,7 @@ public class NativeEngine {
     }
 
 
-    private static native void nativeHookNative(Object method, String hostPackageName, boolean isArt, int apiLevel, int cameraMethodType);
+    private static native void nativeHookNative(Object method, String hostPackageName, boolean isArt, int apiLevel, int[] methodtTypes);
 
     private static native void nativeMark();
 
