@@ -36,6 +36,19 @@ public class VirtualStorageManager {
 
     private Object getRemoteInterface() {
         final IBinder binder = ServiceManagerNative.getService(ServiceManagerNative.VS);
+        if (VirtualCore.get().isMainProcess()) {
+            try {
+                binder.linkToDeath(new IBinder.DeathRecipient() {
+                    @Override
+                    public void binderDied() {
+                        mRemote = null;
+                        getRemote();
+                    }
+                }, 0);
+            } catch (RemoteException e) {
+                //ignore
+            }
+        }
         return IVirtualStorageService.Stub.asInterface(binder);
     }
 

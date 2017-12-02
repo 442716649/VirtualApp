@@ -44,8 +44,21 @@ public class VPackageManager {
     }
 
     private Object getRemoteInterface() {
-        final IBinder pmBinder = ServiceManagerNative.getService(ServiceManagerNative.PACKAGE);
-        return IPackageManager.Stub.asInterface(pmBinder);
+        final IBinder binder = ServiceManagerNative.getService(ServiceManagerNative.PACKAGE);
+        if (VirtualCore.get().isMainProcess()) {
+            try {
+                binder.linkToDeath(new IBinder.DeathRecipient() {
+                    @Override
+                    public void binderDied() {
+                        mRemote = null;
+                        getInterface();
+                    }
+                }, 0);
+            } catch (RemoteException e) {
+                //ignore
+            }
+        }
+        return IPackageManager.Stub.asInterface(binder);
     }
 
     public int checkPermission(String permName, String pkgName, int userId) {

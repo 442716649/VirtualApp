@@ -61,8 +61,21 @@ public class VActivityManager {
 
 
     private Object getRemoteInterface() {
-        return IActivityManager.Stub
-                .asInterface(ServiceManagerNative.getService(ServiceManagerNative.ACTIVITY));
+        final IBinder binder = ServiceManagerNative.getService(ServiceManagerNative.ACTIVITY);
+        if (VirtualCore.get().isMainProcess()) {
+            try {
+                binder.linkToDeath(new IBinder.DeathRecipient() {
+                    @Override
+                    public void binderDied() {
+                        mRemote = null;
+                        getService();
+                    }
+                }, 0);
+            } catch (RemoteException e) {
+                //ignore
+            }
+        }
+        return IActivityManager.Stub.asInterface(binder);
     }
 
 

@@ -8,6 +8,7 @@ import android.accounts.IAccountManagerResponse;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.lody.virtual.client.core.VirtualCore;
@@ -44,8 +45,21 @@ public class VAccountManager {
     }
 
     private Object getStubInterface() {
-        return IAccountManager.Stub
-                .asInterface(ServiceManagerNative.getService(ServiceManagerNative.ACCOUNT));
+        final IBinder binder = ServiceManagerNative.getService(ServiceManagerNative.ACCOUNT);
+        if (VirtualCore.get().isMainProcess()) {
+            try {
+                binder.linkToDeath(new IBinder.DeathRecipient() {
+                    @Override
+                    public void binderDied() {
+                        mRemote = null;
+                        getRemote();
+                    }
+                }, 0);
+            } catch (RemoteException e) {
+                //ignore
+            }
+        }
+        return IAccountManager.Stub.asInterface(binder);
     }
 
     public AuthenticatorDescription[] getAuthenticatorTypes() {
