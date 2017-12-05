@@ -26,6 +26,16 @@ void Java_nativeReadOnly(JNIEnv *env, jclass jclazz, jstring _path) {
     IOUniformer::readOnly(path);
 }
 
+void Java_nativeIOWhitelist(JNIEnv *env, jclass jclazz, jstring _path) {
+    const char *path = env->GetStringUTFChars(_path, NULL);
+    IOUniformer::whitelist(path);
+}
+
+void Java_nativeIOForbid(JNIEnv *env, jclass jclazz, jstring _path) {
+    const char *path = env->GetStringUTFChars(_path, NULL);
+    IOUniformer::forbid(path);
+}
+
 void Java_nativeRedirect(JNIEnv *env, jclass jclazz, jstring orgPath, jstring newPath) {
     const char *org_path = env->GetStringUTFChars(orgPath, NULL);
     const char *new_path = env->GetStringUTFChars(newPath, NULL);
@@ -46,17 +56,23 @@ jstring Java_nativeRestore(JNIEnv *env, jclass jclazz, jstring redirectedPath) {
 
 
 static JNINativeMethod gMethods[] = {
-        NATIVE_METHOD((void *) Java_nativeStartUniformer, "nativeStartUniformer", "(Ljava/lang/String;II)V"),
-        NATIVE_METHOD((void *) Java_nativeReadOnly, "nativeReadOnly", "(Ljava/lang/String;)V"),
-        NATIVE_METHOD((void *) Java_nativeRedirect, "nativeRedirect",
+        NATIVE_METHOD((void *) Java_nativeStartUniformer, "nativeEnableIORedirect", "(Ljava/lang/String;II)V"),
+//        NATIVE_METHOD((void *) Java_nativeReadOnly, "nativeReadOnly", "(Ljava/lang/String;)V"),
+        NATIVE_METHOD((void *) Java_nativeRedirect, "nativeIORedirect",
                       "(Ljava/lang/String;Ljava/lang/String;)V"),
         NATIVE_METHOD((void *) Java_nativeQuery, "nativeGetRedirectedPath",
                       "(Ljava/lang/String;)Ljava/lang/String;"),
-        NATIVE_METHOD((void *) Java_nativeRestore, "nativeRestoreRedirectedPath",
+        NATIVE_METHOD((void *) Java_nativeRestore, "nativeReverseRedirectedPath",
                       "(Ljava/lang/String;)Ljava/lang/String;"),
 
-        NATIVE_METHOD((void *) Java_nativeHookNative, "nativeHookNative",
+        NATIVE_METHOD((void *) Java_nativeHookNative, "nativeLaunchEngine",
                       "(Ljava/lang/Object;Ljava/lang/String;ZII)V"),
+
+        NATIVE_METHOD((void *) Java_nativeIOWhitelist, "nativeIOWhitelist",
+                      "(Ljava/lang/String;)V"),
+
+        NATIVE_METHOD((void *) Java_nativeIOForbid, "nativeIOForbid",
+                      "(Ljava/lang/String;)V"),
 };
 
 

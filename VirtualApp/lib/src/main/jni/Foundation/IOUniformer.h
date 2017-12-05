@@ -37,6 +37,10 @@ namespace IOUniformer {
 
     void readOnly(const char*path);
 
+    void forbid(const char*path);
+
+    void whitelist(const char*path);
+
     const char *query(const char *orig_path);
 
     const char *restore(const char *redirected_path);

@@ -13,6 +13,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/Substrate
 LOCAL_SRC_FILES := Core.cpp \
 				   Foundation/IOUniformer.cpp \
 				   Foundation/VMPatch.cpp \
+				   Foundation/Path.cpp \
                    Substrate/hde64.c \
                    Substrate/SubstrateDebug.cpp \
                    Substrate/SubstrateHook.cpp \

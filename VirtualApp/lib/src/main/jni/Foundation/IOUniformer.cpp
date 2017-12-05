@@ -5,6 +5,7 @@
 #include <Substrate/CydiaSubstrate.h>
 #include <Substrate/SymbolFinder.h>
 #include "IOUniformer.h"
+#include "Path.h"
 
 
 struct Environ {
@@ -12,6 +13,8 @@ struct Environ {
     int api_level;
     int preview_api_level;
     std::list<std::string> ReadOnlyPathMap;
+    std::list<std::string> ForbidPathMap;
+    std::list<std::string> WhiteListPathMap;
     std::map<std::string/*orig_path*/, std::string/*new_path*/> IORedirectMap;
     std::map<std::string/*orig_path*/, std::string/*new_path*/> RootIORedirectMap;
 };
@@ -140,10 +143,25 @@ hook_template(void *handle, const char *symbol, void *new_func, void **old_func)
 
 void onSoLoaded(const char *name, void *handle);
 
+bool isReadOnlyPath(const char *_path);
+
+bool isForbidPath(std::string path);
+
+bool isWhiteListPath(std::string path);
+
 const char *match_redirected_path(const char *_path) {
+//    char *realpath = canonicalize_filename(_path);
     std::string path(_path);
     if (path.length() <= 1) {
         return _path;
+    }
+    if(isWhiteListPath(path)){
+        return _path;
+    }
+    if(isForbidPath(path)){
+        // Permission denied
+        errno = 13;
+        return NULL;
     }
     std::map<std::string, std::string>::iterator iterator;
     iterator = gVars->RootIORedirectMap.find(path);
@@ -180,6 +198,36 @@ void IOUniformer::readOnly(const char *_path) {
     gVars->ReadOnlyPathMap.push_back(path);
 }
 
+void IOUniformer::forbid(const char *_path) {
+    std::string path(_path);
+    gVars->ForbidPathMap.push_back(path);
+}
+
+void IOUniformer::whitelist(const char *_path) {
+    std::string path(_path);
+    gVars->WhiteListPathMap.push_back(path);
+}
+
+bool isWhiteListPath(std::string path) {
+    std::list<std::string>::iterator it;
+    for (it = gVars->WhiteListPathMap.begin(); it != gVars->WhiteListPathMap.end(); ++it) {
+        if (startWith(path, *it)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool isForbidPath(std::string path) {
+    std::list<std::string>::iterator it;
+    for (it = gVars->ForbidPathMap.begin(); it != gVars->ForbidPathMap.end(); ++it) {
+        if (startWith(path, *it)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool isReadOnlyPath(const char *_path) {
     std::string path(_path);
     std::list<std::string>::iterator it;
@@ -190,7 +238,6 @@ bool isReadOnlyPath(const char *_path) {
     }
     return false;
 }
-
 
 const char *IOUniformer::restore(const char *_path) {
     if (_path == NULL) {
