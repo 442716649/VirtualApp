@@ -24,14 +24,26 @@ public class VDeviceManager {
 
 
     public IDeviceInfoManager getRemote() {
-        if (mRemote == null ||
-                (!mRemote.asBinder().isBinderAlive() && !VirtualCore.get().isVAppProcess())) {
+        if (mRemote == null || !isAlive()) {
             synchronized (this) {
                 Object remote = getRemoteInterface();
                 mRemote = LocalProxyUtils.genProxy(IDeviceInfoManager.class, remote);
             }
         }
         return mRemote;
+    }
+
+    private boolean isAlive(){
+        if(mRemote==null){
+            return false;
+        }
+        if(VirtualCore.get().isMainProcess()){
+            return mRemote.asBinder().pingBinder();
+        }else if(VirtualCore.get().isVAppProcess()){
+            return true;
+        }else{
+            return mRemote.asBinder().isBinderAlive();
+        }
     }
 
     private Object getRemoteInterface() {
@@ -57,6 +69,14 @@ public class VDeviceManager {
             return getRemote().getDeviceInfo(userId);
         } catch (RemoteException e) {
             return VirtualRuntime.crash(e);
+        }
+    }
+
+    public void updateDeviceInfo(int userId, VDeviceInfo dinfo) {
+        try {
+            getRemote().updateDeviceInfo(userId, dinfo);
+        } catch (RemoteException e) {
+            VirtualRuntime.crash(e);
         }
     }
 }
